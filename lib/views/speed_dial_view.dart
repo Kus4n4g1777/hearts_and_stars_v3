@@ -63,6 +63,11 @@ class SpeedDialView extends StatelessWidget {
             label: 'YOLOv8 Real-time Detection',
             onTap: () => Get.toNamed('/video-detect'),
           ),
+          SpeedDialChild(
+            child: const Icon(Icons.favorite),
+            label: 'ping: "pong from FastAPI 🚀',
+            onTap: () => Get.toNamed('/ping-test')
+          )
         ],
       ),
     );

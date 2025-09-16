@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'services/api_service.dart';
+import '../services/api_service.dart';
 
 class ApiTestView extends StatefulWidget {
   const ApiTestView({super.key});
@@ -17,11 +17,11 @@ class _ApiTestViewState extends State<ApiTestView> {
     final result = await _api.ping();
     setState((){
       _message = result;
-    })
+    });
   }
 
   @override
-  Widget build(Buildcontext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("FastAPI Connection Test")),
       body: Center(
@@ -37,6 +37,6 @@ class _ApiTestViewState extends State<ApiTestView> {
           ]
         )
       )
-    )
+    );
   }
 }
