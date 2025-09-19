@@ -157,3 +157,83 @@ This commit introduces:
 - README instructions for setting up a local FastAPI server.
 - Keeps the button ready for future backend features ("ping pong" style 😉).
 
+# Flutter Integration & Backend Connection
+
+This document summarizes all the steps, challenges, and solutions we applied to connect our Flutter application with the backend running via Docker Compose since our last commit.
+
+## 1. Setup & API Service
+
+- Created a **dedicated `ApiService`** class in Flutter for authentication and protected routes.
+- Handled **platform-specific base URLs**:
+  - Android Emulator: `http://10.0.2.2:8000`
+  - iOS Simulator / Desktop: `http://127.0.0.1:8000`
+- Added functions:
+  - `login(username, password)` → sends POST request, stores JWT in `SharedPreferences`.
+  - `validateToken()` → checks if the JWT is still valid.
+  - `getProtectedData()` → fetches data from protected routes.
+  - `ping()` → simple connectivity test for the backend.
+
+**Challenges & Fixes:**
+- Initial 404 errors due to wrong base URL. Confirmed via Flutter prints/logs.
+- Backend CORS whitelist updated to allow:
+  ```
+  "http://10.0.2.2:8000"   # Flutter Emulator
+  "http://127.0.0.1:8000"  # Flutter Desktop / Android Studio
+  ```
+- Flutter requests now properly reach the FastAPI backend.
+
+---
+
+## 2. Android Studio & Emulator Adjustments
+
+- Confirmed the **emulator IP resolution**:
+  - `10.0.2.2` maps to host `127.0.0.1`.
+- Encountered storage issues on emulator:
+  - Emulator runs out of disk space when using default drive.
+  - Solution: **moved the emulator to another drive** with sufficient space to avoid corruption and I/O errors.
+- Added **Flutter prints** to check endpoint URLs and token usage during runtime for debugging.
+
+---
+
+## 3. Docker & Networking Challenges
+
+- Backend runs in **Docker Compose**, ports exposed:
+  - `8000` for FastAPI
+- Flutter Emulator needed proper networking:
+  - Used `10.0.2.2` to reach the host Docker network.
+- Adjusted **CORS in FastAPI** to handle requests from emulator, Flutter web, React, and other frontend environments.
+
+**Errors Encountered:**
+- 404 on initial requests → resolved by verifying endpoint paths and base URL.
+- Token verification failures → ensured JWT was stored correctly in `SharedPreferences` and sent in headers.
+- Docker frontend container failing due to **disk I/O / metadata.db errors**:
+  - Needed to restart Docker and prune unused volumes/images safely.
+  - Android Studio Emulator storage relocated to avoid conflicts.
+
+---
+
+## 4. Development Workflow Notes
+
+- Used `print()` in Flutter for debugging:
+  ```dart
+  print('Flutter API baseUrl: $baseUrl');
+  ```
+- Verified connectivity using `ping()` endpoint before full integration.
+- Ensured JWT authentication flow works end-to-end:
+  1. Login → stores token.
+  2. Validate token → succeeds.
+  3. Access protected data → works with headers.
+
+---
+
+## 5. Troubleshooting & Recommendations
+
+- **Emulator storage**: Always check disk space; move to larger drives if running into I/O errors.
+- **Docker cleanup**: Use safe pruning commands to remove dangling images, networks, and volumes.
+- **CORS**: Always ensure FastAPI allows the correct origins for all frontend clients.
+- **Debugging in Flutter**: Add temporary print statements for URLs, tokens, and responses to verify connectivity.
+
+---
+
+✅ With these steps, the Flutter app successfully connects to the backend, authenticates, and accesses protected endpoints via Docker Compose without CORS or networking issues.
+

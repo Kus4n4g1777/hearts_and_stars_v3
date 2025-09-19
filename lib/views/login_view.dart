@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/auth_controller.dart';
+import '../services/api_service.dart';
 
 class LoginView extends StatelessWidget {
   LoginView({super.key});
@@ -108,7 +109,7 @@ class LoginView extends StatelessWidget {
 
                       // Optional: demo credentials hint
                       const Text(
-                        'Demo: any username + password (no backend yet)',
+                        'Pending: Add here create new user',
                         style: TextStyle(color: Colors.white54, fontSize: 12),
                       ),
                     ],
