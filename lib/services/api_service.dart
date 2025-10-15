@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:logger/logger.dart';
 
 class ApiService {
   static String get baseUrl {
@@ -19,9 +20,11 @@ class ApiService {
       },
     );
 
-    print("📡 Login POST -> $baseUrl/token");
-    print("📦 Status code: ${response.statusCode}");
-    print("📦 Response body: ${response.body}");
+    var logger = Logger();
+
+    logger.i("📡 Login POST -> $baseUrl/token");
+    logger.i("📦 Status code: ${response.statusCode}");
+    logger.i("📦 Response body: ${response.body}");
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

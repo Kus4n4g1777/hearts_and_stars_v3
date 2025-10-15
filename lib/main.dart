@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/', page: () => LoginView()),
         GetPage(name: '/speed-dials', page: () => const SpeedDialView()),
         GetPage(name: '/image-detect', page: () => const ImageDetectionView()),
-        GetPage(name: '/video-detect', page: () => const VideoDetectionView()),
+        GetPage(name: '/video-detect', page: () => VideoDetectionView()),
         GetPage(name: '/ping-test', page: () => const ApiTestView())
       ],
     );

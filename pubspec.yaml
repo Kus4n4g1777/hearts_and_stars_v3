@@ -40,12 +40,14 @@ dependencies:
   rive: ^0.13.20
   http: ^1.5.0
   shared_preferences: ^2.5.3
-
+  web_socket_channel: ^3.0.3
+  image: ^4.1.7 # Add this line
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
   get: ^4.7.2
+  logger: ^2.4.0
 
 dev_dependencies:
   flutter_test:
