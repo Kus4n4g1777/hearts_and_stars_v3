@@ -147,6 +147,29 @@ class ApiService {
     }
   }
 
+  // ==================== LOGOUT ====================
+
+  /// Logout user (clear local token)
+  ///
+  /// What it does:
+  /// - Removes JWT token from storage
+  /// - Removes username from storage
+  /// - Clears any cached user data
+  ///
+  /// Note: This is LOCAL logout only
+  /// - Token still valid on backend until expiration
+  /// - For server-side logout, would need /logout endpoint
+  ///
+  /// Why local only?
+  /// - JWT tokens are stateless (backend doesn't track them)
+  /// - Token expires automatically
+  /// - Revoking tokens requires backend blacklist
+  Future<void> logout() async {
+    await _storage.clearToken();
+    await _storage.remove(ApiConstants.usernameKey);
+    _logger.i('👋 User logged out');
+  }
+
   // ==================== HEALTH CHECK ====================
 
   /// Ping server to check if backend is alive
