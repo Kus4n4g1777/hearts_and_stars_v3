@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:camera/camera.dart';
-import '../controllers/video_detection_controller.dart';
-import '../helpers/bounding_box_painter.dart';
+import '../../controllers/video_detection_controller.dart';
+import '../../widgets/bounding_box_painter.dart';
 
 class VideoDetectionView extends StatelessWidget {
   const VideoDetectionView({Key? key}) : super(key: key);
@@ -26,14 +26,12 @@ class VideoDetectionView extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             CameraPreview(controller.cameraController),
-
             CustomPaint(
               painter: BoundingBoxPainter(
                 detections,
-                imageSize: const Size(640, 480), // Adjust as needed
+                imageSize: const Size(640, 480),
               ),
             ),
-
             Positioned(
               top: 40,
               left: 20,
@@ -48,9 +46,8 @@ class VideoDetectionView extends StatelessWidget {
                   children: detections.map((d) {
                     final label = d['label'] ?? 'Object';
                     final confidence = ((d['confidence'] ?? 0.0) * 100).toStringAsFixed(1);
-                    final bbox = d['bbox'] ?? [0, 0, 0, 0];
                     return Text(
-                      '$label - $confidence% - bbox: [${bbox.join(', ')}]',
+                      '$label - $confidence%',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
-import '../controllers/auth_controller.dart';
+import '../../controllers/auth_controller.dart';
+import '../../../core/routes/app_routes.dart';
 
 class SpeedDialView extends StatelessWidget {
   const SpeedDialView({super.key});
@@ -14,7 +15,6 @@ class SpeedDialView extends StatelessWidget {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // background (same as login)
           Positioned.fill(
             child: Image.asset(
               'assets/images/background.jpg',
@@ -24,7 +24,6 @@ class SpeedDialView extends StatelessWidget {
           Positioned.fill(
             child: Container(color: const Color.fromRGBO(0, 0, 0, 0.35)),
           ),
-
           SafeArea(
             child: Center(
               child: Column(
@@ -45,7 +44,6 @@ class SpeedDialView extends StatelessWidget {
           ),
         ],
       ),
-
       floatingActionButton: SpeedDial(
         icon: Icons.menu,
         activeIcon: Icons.close,
@@ -56,17 +54,17 @@ class SpeedDialView extends StatelessWidget {
           SpeedDialChild(
             child: const Icon(Icons.image),
             label: 'YOLOv8 Image Detection',
-            onTap: () => Get.toNamed('/image-detect'),
+            onTap: () => Get.toNamed(AppRoutes.imageDetection),
           ),
           SpeedDialChild(
             child: const Icon(Icons.videocam),
             label: 'YOLOv8 Real-time Detection',
-            onTap: () => Get.toNamed('/video-detect'),
+            onTap: () => Get.toNamed(AppRoutes.videoDetection),
           ),
           SpeedDialChild(
             child: const Icon(Icons.favorite),
-            label: 'ping: "pong from FastAPI 🚀',
-            onTap: () => Get.toNamed('/ping-test')
+            label: 'Ping FastAPI',
+            onTap: () => Get.toNamed(AppRoutes.pingTest),
           )
         ],
       ),

@@ -1,30 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'views/login_view.dart';
-import 'views/speed_dial_view.dart';
-import 'views/image_detection_view.dart';
-import 'views/video_detection_view.dart';
-import 'views/ping-test-view.dart';
+import 'core/routes/app_routes.dart';
+import 'services/storage_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await StorageService.getInstance();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Hearts & Stars',
-      initialRoute: '/',
-      getPages: [
-        GetPage(name: '/', page: () => LoginView()),
-        GetPage(name: '/speed-dials', page: () => const SpeedDialView()),
-        GetPage(name: '/image-detect', page: () => const ImageDetectionView()),
-        GetPage(name: '/video-detect', page: () => VideoDetectionView()),
-        GetPage(name: '/ping-test', page: () => const ApiTestView())
-      ],
+      title: 'Hearts & Stars Detector',
+      initialRoute: AppRoutes.login,
+      getPages: AppRoutes.routes,
     );
   }
 }

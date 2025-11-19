@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import '../../../services/api_service.dart';
 
-class ApiTestView extends StatefulWidget {
-  const ApiTestView({super.key});
+class PingTestView extends StatefulWidget {
+  const PingTestView({super.key});
 
   @override
-  State<ApiTestView> createState() => _ApiTestViewState();
+  State<PingTestView> createState() => _PingTestViewState();
 }
 
-class _ApiTestViewState extends State<ApiTestView> {
+class _PingTestViewState extends State<PingTestView> {
   String _message = "Press the button to ping FastAPI";
-
   final ApiService _api = ApiService();
 
   void _getPing() async {
-    final result = await _api.ping();
-    setState((){
-      _message = result;
-    });
+    try {
+      final result = await _api.ping();
+      setState(() {
+        _message = result;
+      });
+    } catch (e) {
+      setState(() {
+        _message = "Error: $e";
+      });
+    }
   }
 
   @override
@@ -28,15 +33,15 @@ class _ApiTestViewState extends State<ApiTestView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(_message, style: const TextStyle(fontSize: 20)),
+            Text(_message, style: const TextStyle(fontSize: 20, color: Colors.white)),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _getPing,
               child: const Text("Ping FastAPI"),
             )
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/auth_controller.dart';
-import '../services/api_service.dart';
+import '../../controllers/auth_controller.dart';
 
 class LoginView extends StatelessWidget {
   LoginView({super.key});
@@ -10,26 +9,20 @@ class LoginView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Keep scaffold transparent so background shows through
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // Fullscreen background image
           Positioned.fill(
             child: Image.asset(
               'assets/images/background.jpg',
               fit: BoxFit.cover,
             ),
           ),
-
-          // Semi-transparent overlay for readability
           Positioned.fill(
             child: Container(
               color: const Color.fromRGBO(0, 0, 0, 0.35),
             ),
           ),
-
-          // Main content (centered)
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -49,8 +42,6 @@ class LoginView extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 28),
-
-                      // Username field
                       TextField(
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
@@ -67,8 +58,6 @@ class LoginView extends StatelessWidget {
                         onChanged: (v) => controller.username.value = v,
                       ),
                       const SizedBox(height: 16),
-
-                      // Password field
                       TextField(
                         style: const TextStyle(color: Colors.white),
                         obscureText: true,
@@ -86,8 +75,6 @@ class LoginView extends StatelessWidget {
                         onChanged: (v) => controller.password.value = v,
                       ),
                       const SizedBox(height: 24),
-
-                      // Login button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -104,13 +91,6 @@ class LoginView extends StatelessWidget {
                             style: TextStyle(fontSize: 18, color: Colors.white),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Optional: demo credentials hint
-                      const Text(
-                        'Pending: Add here create new user',
-                        style: TextStyle(color: Colors.white54, fontSize: 12),
                       ),
                     ],
                   ),
