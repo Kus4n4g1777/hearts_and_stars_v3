@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:camera/camera.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../../services/websocket_service.dart';
+//import 'dart:typed_data';
+//import 'package:flutter/material.dart';
 
 /// Video Detection Controller
 ///
@@ -248,7 +249,7 @@ class VideoDetectionController extends GetxController {
 
       final XFile imageFile = await cameraController.takePicture();
       final Uint8List imageBytes = await imageFile.readAsBytes();
-      final base64Frame = base64Encode(imageBytes);
+      final base64Frame = await compute(_encodeBase64, imageBytes);
 
       _wsService.sendFrame(base64Frame);
 
@@ -376,5 +377,8 @@ class VideoDetectionController extends GetxController {
     _wsService.dispose();
 
     debugPrint("✅ Cleanup complete");
+  }
+  static String _encodeBase64(Uint8List bytes) {
+    return base64Encode(bytes);
   }
 }
