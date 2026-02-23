@@ -45,7 +45,11 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  # BLoC State Management (NEW!)
+  flutter_bloc: ^8.1.6
+  equatable: ^2.0.5
 
+  # Keep GetX for now (we'll remove later)
   get: ^4.7.2
   logger: ^2.4.0
 
@@ -59,6 +63,11 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  mockito: ^5.4.4              # Para mocks
+  build_runner: ^2.4.8         # Code generator
+  bloc_test: ^9.1.7
+  integration_test:
+    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
