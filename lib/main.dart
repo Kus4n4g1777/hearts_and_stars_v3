@@ -1,162 +1,138 @@
+/// Application Entry Point
+///
+/// Bootstraps the app with:
+/// - StorageService initialization (local persistence for auth tokens)
+/// - AuthBloc provisioned at the root so auth state is globally accessible
+/// - Dynamic home routing based on authentication state
+///
+/// Architecture: BLoC Pattern — Pure Flutter, zero GetX
+///
+/// Navigation strategy:
+/// - Named routes via MaterialApp.routes for static destinations
+/// - BlocBuilder at the root handles the auth gate (splash → login → home)
+///   so the correct screen is always shown on cold start without redirects
+///
+/// Why BlocBuilder at the root instead of a route guard?
+/// Route guards intercept navigation after the fact.
+/// BlocBuilder at home: resolves the correct initial screen declaratively —
+/// no flash-of-wrong-screen, no extra navigation events on startup.
+
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+// BLoC imports
+import 'presentation/auth/bloc/auth_bloc.dart';
+import 'presentation/auth/bloc/auth_event.dart';
+import 'presentation/auth/bloc/auth_state.dart';
+
+// Page imports
+import 'presentation/auth/pages/login_page.dart';
+import 'presentation/views/home/speed_dial_view.dart';
+import 'presentation/views/detection/image_detection_view.dart';
+import 'presentation/views/detection/video_detection_view.dart';
+import 'presentation/views/testing/ping_test_view.dart';
 import 'core/routes/app_routes.dart';
 import 'services/storage_service.dart';
 
-/// Application entry point
-///
-/// This is the first function that runs when app starts
-///
-/// Flow:
-/// 1. main() called by Flutter framework
-/// 2. Initialize services (async operations)
-/// 3. Run the app (MyApp widget)
-///
-/// Why async main?
-/// - Need to initialize SharedPreferences before app starts
-/// - Ensures storage is ready before any code tries to use it
-/// - Prevents "SharedPreferences not initialized" errors
 void main() async {
-  // ==================== FLUTTER INITIALIZATION ====================
-
-  /// Ensure Flutter framework is fully initialized
-  ///
-  /// Why needed before async operations?
-  /// - async main() requires this
-  /// - Initializes bindings for platform channels
-  /// - Must be called before any async code in main()
-  ///
-  /// Without this line:
-  /// - Runtime error: "ServicesBinding not initialized"
-  /// - Platform channels won't work
-  /// - Cannot access native features
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ==================== SERVICE INITIALIZATION ====================
-
-  /// Initialize storage service (SharedPreferences)
-  ///
-  /// Why initialize here instead of lazy?
-  /// - Ensures storage is ready before any screen loads
-  /// - Prevents race conditions (trying to read token before init)
-  /// - Fails fast if storage has issues
-  ///
-  /// What this does:
-  /// - Loads SharedPreferences from disk
-  /// - Creates singleton instance
-  /// - Makes it available to entire app
-  ///
-  /// Alternative approach (lazy loading):
-  /// - Initialize when first needed
-  /// - Faster app startup
-  /// - But adds complexity (must handle "not initialized" state)
+  // StorageService must be initialized before runApp so the AuthBloc
+  // can read the stored token synchronously on first state check
   await StorageService.getInstance();
 
-  // ==================== RUN APP ====================
-
-  /// Start the Flutter app
-  ///
-  /// Creates widget tree starting from MyApp
-  /// Shows first screen (determined by initialRoute)
   runApp(const MyApp());
 }
 
-/// Root widget of the application
-///
-/// This widget:
-/// - Configures the entire app (theme, routes, etc.)
-/// - Is stateless (doesn't change after creation)
-/// - Lives for entire app lifecycle
-///
-/// Design pattern: Configuration Object
-/// - All app-wide settings in one place
-/// - Easy to modify theme, routes, etc.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    /// GetMaterialApp - GetX's replacement for MaterialApp
-    ///
-    /// Why GetMaterialApp vs MaterialApp?
-    /// - Built-in route management (Get.toNamed, Get.back)
-    /// - Dependency injection (Get.put, Get.find)
-    /// - No need for BuildContext for navigation
-    /// - Snackbars without context (Get.snackbar)
-    /// - Dialogs without context (Get.dialog)
-    ///
-    /// Standard MaterialApp requires:
-    /// ```dart
-    /// Navigator.of(context).pushNamed('/route');
-    /// ```
-    ///
-    /// GetX simplifies to:
-    /// ```dart
-    /// Get.toNamed('/route');
-    /// ```
-    return GetMaterialApp(
-      // ==================== APP CONFIGURATION ====================
+    return BlocProvider(
+      // AuthBloc is created at the root so auth state is accessible
+      // anywhere in the tree without re-providing it per-screen.
+      // AppStarted dispatched immediately triggers the initial token check.
+      create: (context) => AuthBloc()..add(const AppStarted()),
 
-      /// Hide debug banner (red "DEBUG" in top-right)
-      ///
-      /// Why false?
-      /// - Cleaner screenshots/videos
-      /// - More professional look
-      /// - Banner is useless after you know it's debug mode
-      debugShowCheckedModeBanner: false,
+      child: MaterialApp(
+        title: 'Hearts & Stars Detector',
+        debugShowCheckedModeBanner: false,
 
-      /// App name (shown in task switcher, notifications, etc.)
-      title: 'Hearts & Stars Detector',
+        // ── Named routes for imperative navigation (Navigator.pushNamed) ──
+        // Used by AuthBloc after login/logout to transition between screens.
+        // Kept minimal — the auth gate below handles cold-start routing.
+        routes: {
+          AppRoutes.login: (_) => const LoginPage(),
+          AppRoutes.home: (_) => const SpeedDialView(),
+          AppRoutes.imageDetection: (_) => ImageDetectionView(),
+          AppRoutes.videoDetection: (_) => VideoDetectionView(),
+          AppRoutes.pingTest: (_) => PingTestView(),
+        },
 
-      // ==================== ROUTING ====================
+        // ── Auth gate: resolves the correct screen on cold start ──
+        //
+        // Three possible states on launch:
+        // - AuthInitial / AuthLoading: app is checking stored token → splash
+        // - AuthAuthenticated: valid token found → go straight to home
+        // - Anything else (AuthUnauthenticated): no token → login screen
+        //
+        // This declarative approach means the correct screen is rendered
+        // on the first frame — no redirect flicker, no intermediate route.
+        home: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
 
-      /// Initial route when app starts
-      ///
-      /// This is the first screen user sees
-      /// Format: matches route names in AppRoutes
-      ///
-      /// Flow:
-      /// 1. App starts → shows login screen
-      /// 2. User logs in → navigates to home
-      /// 3. User can't go back to login (removed from stack)
-      initialRoute: AppRoutes.login,
+            // Splash screen while the stored token check is in progress
+            if (state is AuthInitial || state is AuthLoading) {
+              return Scaffold(
+                body: Stack(
+                  children: [
+                    // Full-screen background image on splash
+                    Positioned.fill(
+                      child: Image.asset(
+                        'assets/images/background.jpg',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    // Darkening overlay for readability
+                    Positioned.fill(
+                      child: Container(
+                        color: const Color.fromRGBO(0, 0, 0, 0.35),
+                      ),
+                    ),
+                    const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            color: Colors.deepOrangeAccent,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading...',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-      /// List of all available routes
-      ///
-      /// Defined in AppRoutes.routes
-      /// Each route maps name → widget
-      ///
-      /// Benefits:
-      /// - Centralized route management
-      /// - Type-safe navigation (compile-time errors)
-      /// - Easy to add middleware (auth guards, analytics)
-      /// - Clear app structure at a glance
-      getPages: AppRoutes.routes,
+            // Valid session found — skip login entirely
+            if (state is AuthAuthenticated) {
+              return const SpeedDialView();
+            }
 
-      // ==================== OPTIONAL CONFIGURATIONS ====================
-
-      /// Default page transition animation
-      /// Options: fadeIn, rightToLeft, leftToRight, zoom, etc.
-      ///
-      /// Commented out = uses default (platform-specific)
-      /// - Android: slide up
-      /// - iOS: slide from right
-      // defaultTransition: Transition.fadeIn,
-
-      /// Transition duration
-      /// Default is fine for most cases
-      // transitionDuration: const Duration(milliseconds: 300),
-
-      /// App theme (colors, fonts, etc.)
-      ///
-      /// Could customize:
-      /// ```dart
-      /// theme: ThemeData(
-      ///   primarySwatch: Colors.deepOrange,
-      ///   scaffoldBackgroundColor: Colors.black,
-      ///   // ... more theme settings
-      /// ),
-      /// ```
+            // No session or explicit logout — show login screen
+            return const LoginPage();
+          },
+        ),
+      ),
     );
   }
 }
