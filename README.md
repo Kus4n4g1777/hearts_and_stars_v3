@@ -450,7 +450,7 @@ This project is for educational/portfolio purposes.
 
 **Kus4n4g1777**
 - GitHub: [@Kus4n4g1777](https://github.com/Kus4n4g1777)
-- LinkedIn: *(your LinkedIn)*
+- LinkedIn: [sunny-orukwo](https://www.linkedin.com/in/sunny-orukwo/)
 
 ---
 
